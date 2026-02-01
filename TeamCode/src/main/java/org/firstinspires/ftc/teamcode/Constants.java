@@ -11,10 +11,9 @@ import com.pedropathing.ftc.localization.localizers.DriveEncoderLocalizer;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.teamcode.subsystems.Camera;
 import org.firstinspires.ftc.teamcode.subsystems.FusedLocalizer;
+import org.firstinspires.ftc.teamcode.subsystems.LimelightVision;
 
 public class Constants {
     // motor power 1 = 100% and 0.5 = 50%
@@ -53,11 +52,10 @@ public class Constants {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
                 .mecanumDrivetrain(driveConstants)
-                .setLocalizer(new DriveEncoderLocalizer(hardwareMap,localizerConstants))
-//                .setLocalizer(new FusedLocalizer(
-//                        hardwareMap,
-//                        new DriveEncoderLocalizer(hardwareMap,localizerConstants),
-//                        new Camera()))
+                .setLocalizer(new FusedLocalizer(
+                        new DriveEncoderLocalizer(hardwareMap, localizerConstants),
+                        new LimelightVision(hardwareMap)
+                ))
                 .build();
     }
     public static MecanumConstants driveConstants = new MecanumConstants()
