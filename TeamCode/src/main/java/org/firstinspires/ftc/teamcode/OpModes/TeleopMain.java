@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.Catapult;
+import org.firstinspires.ftc.teamcode.subsystems.FusedLocalizer;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightVision;
 
 @TeleOp(name = "TeleopMain", group = "Teleop")
@@ -47,11 +48,11 @@ public class TeleopMain extends OpMode {
     public void loop() {
 
         // ================= DRIVER INPUTS =================
-        boolean intakeIn  = gamepad1.right_trigger > 0.2;
+        boolean intakeIn = gamepad1.right_trigger > 0.2;
         boolean intakeOut = gamepad1.right_bumper || gamepad2.left_bumper;
         boolean footOut = gamepad2.a;
-        boolean footUp  = gamepad2.b;
-        boolean cataUp   = gamepad2.right_bumper;
+        boolean footUp = gamepad2.b;
+        boolean cataUp = gamepad2.right_bumper;
         boolean cataDown = gamepad2.right_trigger > 0.2;
         boolean cataReleased = !cataDown && lastCata;
 
@@ -80,25 +81,25 @@ public class TeleopMain extends OpMode {
 
         if (autoAlign && limelight.hasTarget()) {
 
-            double tx = limelight.getTx(); // horizontal error (deg)
-            double distanceError =
-                    limelight.getForwardDistanceInches() - TARGET_DISTANCE_IN;
-            double yawError = limelight.getYawRadians();
+            double tx = limelight.getTx();
+            double distance = limelight.getForwardDistanceInches();
 
-            double strafe  = -tx * STRAFE_kP;
-            double forward =  distanceError * FORWARD_kP;
-            double rotate  = -yawError * ROTATE_kP;
+            if (Math.abs(tx) < 0.3) tx = 0;
+            if (distance < 1.0) distance = 0;
+
+            double strafe = -tx * STRAFE_kP;
+
+            double forward = distance * FORWARD_kP;
+
+            double rotate = -tx * ROTATE_kP;
 
             mRobot.drive(
-                    clamp(forward, -0.2, 0.2),
-                    clamp(strafe,  -0.6, 0.6),
-                    clamp(rotate,  -0.6, 0.6)
+                    clamp(forward, 0.0, 0.55),
+                    clamp(strafe, -0.2, 0.2),
+                    clamp(rotate, -0.1, 0.1)
             );
-
         }
-
-        else {
-            // ================= NORMAL DRIVE =================
+ else  {
             mRobot.drive(
                     -gamepad1.left_stick_y,
                     -gamepad1.left_stick_x,
@@ -106,9 +107,16 @@ public class TeleopMain extends OpMode {
             );
         }
 
+
+
+
         mRobot.update();
         telemetry.addData("AutoAlign", autoAlign && limelight.hasTarget());
+        telemetry.addData("tx", limelight.getTx());
+        telemetry.addData("ty", limelight.getTy());
+        telemetry.addData("distance", limelight.getForwardDistanceInches());
         telemetry.update();
+
     }
 
     private double clamp(double v, double min, double max) {

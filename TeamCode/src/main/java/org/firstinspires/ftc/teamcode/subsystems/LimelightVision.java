@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -8,8 +10,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 public class LimelightVision {
 
     private static final double METERS_TO_INCHES = 39.3701;
-
-
     private final Limelight3A limelight;
 
     public LimelightVision(HardwareMap hw) {
@@ -23,13 +23,14 @@ public class LimelightVision {
         return r != null && r.isValid() && r.getBotpose() != null;
     }
 
-    public Pose2d getFieldPose() {
+    public Pose getFieldPose() {
         Pose3D p = limelight.getLatestResult().getBotpose();
-        return new Pose2d(
+        Pose pose =  new Pose(
                 p.getPosition().x * METERS_TO_INCHES,
                 p.getPosition().y * METERS_TO_INCHES,
-                Math.toRadians(p.getOrientation().getYaw())
-        );
+                Math.toRadians(p.getOrientation().getYaw()));
+
+                return FTCCoordinates.INSTANCE.convertToPedro(pose);
     }
 
     public static class Pose2d {
@@ -40,11 +41,11 @@ public class LimelightVision {
             this.heading = h;
         }
 
+
     }
 
     // ================= AUTO ALIGN =================
 
-    // CAMERA GEOMETRY (TUNE THESE)
     private static final double CAMERA_HEIGHT_IN = 10.0;   // camera height from floor
     private static final double TAG_HEIGHT_IN    = 5.5;    // AprilTag center height
     private static final double CAMERA_PITCH_DEG = 15.0;   // camera tilt downwards
@@ -58,12 +59,21 @@ public class LimelightVision {
         return limelight.getLatestResult().getTx(); // degrees
     }
 
+    public double getTy() {
+        return limelight.getLatestResult().getTy(); // degrees
+    }
+
     public double getForwardDistanceInches() {
         double ty = limelight.getLatestResult().getTy();
         double totalAngleDeg = CAMERA_PITCH_DEG + ty;
         double totalAngleRad = Math.toRadians(totalAngleDeg);
 
-        return (TAG_HEIGHT_IN - CAMERA_HEIGHT_IN) / Math.tan(totalAngleRad);
+        double distance =
+                (CAMERA_HEIGHT_IN - TAG_HEIGHT_IN) / Math.tan(totalAngleRad);
+
+        // Invert so: closer → smaller ty → smaller distance feels WRONG
+        // We want: closer → smaller distance
+        return Math.abs(distance);
     }
 
     public double getYawRadians() {

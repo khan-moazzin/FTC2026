@@ -12,6 +12,7 @@ import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.FusedLocalizer;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightVision;
 
@@ -34,8 +35,6 @@ public class Constants {
     public static  double LOAD_TIME = 1.5;
 
 
-
-
     public static FollowerConstants followerConstants = new FollowerConstants().mass(11.6)
             .translationalPIDFCoefficients(new PIDFCoefficients(1,0,0,0))
             .headingPIDFCoefficients(new PIDFCoefficients(12,0,0,0.01))
@@ -48,14 +47,11 @@ public class Constants {
 
     public static PathConstraints pathConstraints = new PathConstraints(0.8, 100, 1, 1);
 
-    public static Follower createFollower(HardwareMap hardwareMap) {//todo tuning
+    public static Follower createFollower(HardwareMap hardwareMap, Telemetry telemetry) {//todo tuning
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
                 .mecanumDrivetrain(driveConstants)
-                .setLocalizer(new FusedLocalizer(
-                        new DriveEncoderLocalizer(hardwareMap, localizerConstants),
-                        new LimelightVision(hardwareMap)
-                ))
+                .setLocalizer(new DriveEncoderLocalizer(hardwareMap, localizerConstants))
                 .build();
     }
     public static MecanumConstants driveConstants = new MecanumConstants()

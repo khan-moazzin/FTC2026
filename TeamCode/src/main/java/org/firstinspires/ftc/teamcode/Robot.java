@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.subsystems.Catapult;
 import org.firstinspires.ftc.teamcode.subsystems.Foot;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.LimelightVision;
 
 public class Robot {
 
@@ -21,6 +22,8 @@ public class Robot {
     public Foot foot;
     private IMU imu;
     private Telemetry telemetry;
+    public LimelightVision limelight;
+
 
     double imuOffset = 0;
     boolean robotOriented = false;
@@ -28,12 +31,13 @@ public class Robot {
         this.telemetry = tele;
 
         // DRIVE
-        drive = Constants.createFollower(hw);
+        drive = Constants.createFollower(hw, telemetry);
 
         // SUBSYSTEMS
         intake = new Intake(hw);
         catapult = new Catapult(hw);
         foot = new Foot(hw);
+        limelight = new LimelightVision(hw);
 
         // ----------- IMU INITIALIZATION -----------
         imu = hw.get(IMU.class, "imu");

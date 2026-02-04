@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.Catapult;
 
@@ -24,7 +25,7 @@ public class A6 extends OpMode {
     private TelemetryManager panelsTelemetry;
     public Follower follower;
     private int pathState;
-    private A6Path paths;
+    private A6PathMirror paths;
     private final ElapsedTime StateTimer = new ElapsedTime();
     private final Robot mRobot = new Robot();
 
@@ -39,15 +40,22 @@ public class A6 extends OpMode {
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
+        // Initialize robot normally
         mRobot.init(hardwareMap, telemetry);
-        follower = mRobot.drive;
 
-        follower.setStartingPose(new Pose(21.513, 122.293, Math.toRadians(143.5)));
-        paths = new A6Path(follower);
+        // Use the Constants.createFollower so it gets the FusedLocalizer
+        follower = Constants.createFollower(hardwareMap, telemetry);
+
+        // Set starting pose
+        Pose startPose = new Pose(21.513, 122.293, Math.toRadians(143.5)).mirror();
+        follower.setStartingPose(startPose);
+
+        paths = new A6PathMirror(follower);
 
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);
 
+        // Make sure catapult finishes returning before start
         while (mRobot.catapult.state == Catapult.State.RETURNING) {
             mRobot.catapult.update();
         }
@@ -60,28 +68,28 @@ public class A6 extends OpMode {
 
     @Override
     public void loop() {
+        follower.update();
         autonomousPathUpdate();
         mRobot.update();
 
-        try {
-            follower.updateErrorAndVectors();
-            if (follower.getCurrentPath() != null) {
-                telemetry.addData("Velocity", follower.poseTracker.getVelocity().getMagnitude() <
-                        follower.getCurrentPath().getPathEndVelocityConstraint());
-                telemetry.addData("Translation", follower.poseTracker.getPose().distanceFrom(
-                        follower.getClosestPose().getPose()) <
-                        follower.getCurrentPath().getPathEndTranslationalConstraint());
-                telemetry.addData("Heading", MathFunctions.getSmallestAngleDifference(
-                        follower.poseTracker.getPose().getHeading(),
-                        follower.getClosestPointHeadingGoal()) <
-                        follower.getCurrentPath().getPathEndHeadingConstraint());
-            }
+        Pose fusedPose = follower.poseTracker.getPose();
+
+        // Telemetry
+        telemetry.addData("X", fusedPose.getX());
+        telemetry.addData("Y", fusedPose.getY());
+        telemetry.addData("Heading", Math.toDegrees(fusedPose.getHeading()));
+
+        if (follower.getCurrentPath() != null) {
+            telemetry.addData("Velocity", follower.poseTracker.getVelocity().getMagnitude() <
+                    follower.getCurrentPath().getPathEndVelocityConstraint());
+            telemetry.addData("Translation", fusedPose.distanceFrom(
+                    follower.getClosestPose().getPose()) <
+                    follower.getCurrentPath().getPathEndTranslationalConstraint());
+            telemetry.addData("Heading", MathFunctions.getSmallestAngleDifference(
+                    fusedPose.getHeading(),
+                    follower.getClosestPointHeadingGoal()) <
+                    follower.getCurrentPath().getPathEndHeadingConstraint());
             telemetry.addData("Busy", follower.isBusy());
-        } catch (Exception ignored) {
-            telemetry.addData("Velocity", "ERROR");
-            telemetry.addData("Translation", "ERROR");
-            telemetry.addData("Heading", "ERROR");
-            telemetry.addData("Busy", "ERROR");
         }
 
         panelsTelemetry.debug("PathState", pathState);

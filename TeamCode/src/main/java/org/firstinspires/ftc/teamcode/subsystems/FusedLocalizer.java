@@ -5,51 +5,65 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.localization.Localizer;
 import com.pedropathing.math.Vector;
 
-import org.firstinspires.ftc.teamcode.subsystems.LimelightVision;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/**
- * Encoder-dominant localizer with Limelight AprilTag correction.
- */
 public class FusedLocalizer implements Localizer {
 
     private final DriveEncoderLocalizer odom;
     private final LimelightVision limelight;
+    private final Telemetry telemetry;
 
-    private Pose pose = new Pose(0, 0, 0);
+    // === TUNABLE ===
+    private static final double VISION_WEIGHT = 0.08; // 0.05–0.15 recommended
 
-    // Tune later
-    private static final double VISION_WEIGHT = 0.1;
+    private Pose currentPose = new Pose(0, 0, 0);
 
     public FusedLocalizer(
             DriveEncoderLocalizer odom,
-            LimelightVision limelight
+            LimelightVision limelight,
+            Telemetry telemetry
     ) {
         this.odom = odom;
         this.limelight = limelight;
+        this.telemetry = telemetry;
     }
 
     @Override
     public void update() {
-        // Encoder update
+        // Always update odometry
         odom.update();
-        pose = odom.getPose();
+        Pose odomPose = odom.getPose();
+        currentPose = odomPose;
 
-        // Vision correction
+        boolean visionUsed = false;
+
         if (limelight.hasPose()) {
-            LimelightVision.Pose2d v = limelight.getFieldPose();
+            Pose visionPose = limelight.getFieldPose();
 
-            Pose corrected = new Pose(
-                    lerp(pose.getX(), v.x, VISION_WEIGHT),
-                    lerp(pose.getY(), v.y, VISION_WEIGHT),
-                    angleLerp(pose.getHeading(), v.heading, VISION_WEIGHT)
+            double fusedX = lerp(odomPose.getX(), visionPose.getX(), VISION_WEIGHT);
+            double fusedY = lerp(odomPose.getY(), visionPose.getY(), VISION_WEIGHT);
+            double fusedH = angleLerp(
+                    odomPose.getHeading(),
+                    visionPose.getHeading(),
+                    VISION_WEIGHT
             );
-            pose = corrected;
-            odom.setPose(corrected);
-        }}
+
+            currentPose = new Pose(fusedX, fusedY, fusedH);
+            odom.setPose(currentPose);
+            visionUsed = true;
+        }
+
+        if (telemetry != null) {
+            telemetry.addData("Vision", visionUsed ? "USED" : "NO POSE");
+            telemetry.addData("X", currentPose.getX());
+            telemetry.addData("Y", currentPose.getY());
+            telemetry.addData("H (deg)", Math.toDegrees(currentPose.getHeading()));
+        }
+    }
 
     @Override
     public Pose getPose() {
-        return pose;
+        return currentPose;
     }
 
     @Override
@@ -65,13 +79,13 @@ public class FusedLocalizer implements Localizer {
     @Override
     public void setStartPose(Pose setStart) {
         odom.setStartPose(setStart);
-        pose = setStart;
+        currentPose = setStart;
     }
 
     @Override
     public void setPose(Pose setPose) {
         odom.setPose(setPose);
-        pose = setPose;
+        currentPose = setPose;
     }
 
     @Override
@@ -104,10 +118,12 @@ public class FusedLocalizer implements Localizer {
 
     @Override
     public boolean isNAN() {
-        return Double.isNaN(pose.getX())
-                || Double.isNaN(pose.getY())
-                || Double.isNaN(pose.getHeading());
+        return Double.isNaN(currentPose.getX())
+                || Double.isNaN(currentPose.getY())
+                || Double.isNaN(currentPose.getHeading());
     }
+
+    // ================= HELPERS =================
 
     private static double lerp(double a, double b, double t) {
         return a + (b - a) * t;
