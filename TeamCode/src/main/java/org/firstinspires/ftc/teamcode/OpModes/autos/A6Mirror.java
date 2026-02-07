@@ -17,15 +17,15 @@ import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.Catapult;
 
-@Autonomous(name = "A6 BLUE", group = "Autonomous")
+@Autonomous(name = "A6 RED", group = "Autonomous")
 @Configurable
-public class A6 extends OpMode {
+public class A6Mirror extends OpMode {
 
     private static final double INTAKE_TIME = 3;
     private TelemetryManager panelsTelemetry;
     public Follower follower;
     private int pathState;
-    private A6Path paths;
+    private A6PathMirror paths;
     private final ElapsedTime StateTimer = new ElapsedTime();
     private final Robot mRobot = new Robot();
 
@@ -47,10 +47,10 @@ public class A6 extends OpMode {
         follower = Constants.createFollower(hardwareMap, telemetry);
 
         // Set starting pose
-        Pose startPose = new Pose(21.513, 122.293, Math.toRadians(143.5));
+        Pose startPose = new Pose(21.513, 122.293, Math.toRadians(143.5)).mirror();
         follower.setStartingPose(startPose);
 
-        paths = new A6Path(follower);
+        paths = new A6PathMirror(follower);
 
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);

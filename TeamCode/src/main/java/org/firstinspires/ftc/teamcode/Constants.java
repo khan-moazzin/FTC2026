@@ -51,7 +51,14 @@ public class Constants {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
                 .mecanumDrivetrain(driveConstants)
-                .setLocalizer(new DriveEncoderLocalizer(hardwareMap, localizerConstants))
+                .setLocalizer(
+//                        new FusedLocalizer(
+//                        new DriveEncoderLocalizer(hardwareMap, localizerConstants),
+//                        new LimelightVision(hardwareMap),
+//                                telemetry
+//                )
+                        new DriveEncoderLocalizer(hardwareMap,localizerConstants)
+                )
                 .build();
     }
     public static MecanumConstants driveConstants = new MecanumConstants()
