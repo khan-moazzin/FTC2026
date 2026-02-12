@@ -14,6 +14,7 @@ public class A6PathMirror {
     public PathChain Path1;
     public PathChain Path2;
     public PathChain Path3;
+    public PathChain leave;
 
     public A6PathMirror(Follower follower) {
         Path1 = follower
@@ -21,25 +22,35 @@ public class A6PathMirror {
                 .addPath(
                         new BezierLine(new Pose(21.513, 122.293).mirror(), new Pose(43.607, 83.8697421981004).mirror())
                 )
-                .setConstantHeadingInterpolation(Math.toRadians(180 -143.5))
+                .setConstantHeadingInterpolation(Math.toRadians(180-143.5))
                 .build();
 
         Path2 = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(43.607, 83.8697421981004).mirror(), new Pose(5.544, 83.8697421981004).mirror())
+                        new BezierLine(new Pose(43.607, 81.8697421981004).mirror(), new Pose(5.544, 81.8697421981004).mirror())
                 )
                 .setTangentHeadingInterpolation()
                 .build();
 
-        Path3 = follower.pathBuilder().addPath(
-                new BezierCurve(
-                        new Pose(5.544, 83.870).mirror(),
-                        new Pose(22.022, 102.151).mirror(),
-                        new Pose(21.513, 122.293).mirror()
-                )
-        )
-                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180-143.5))
+        Path3  = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(5.544, 83.870).mirror(),
+                                new Pose(38.630, 100.978).mirror(),
+                                new Pose(21.318, 125.810).mirror()
+                        )
+                ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180-143.5))
+
+                .build();
+
+        leave = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(18.778, 124.247).mirror(),
+
+                                new Pose(36.342, 139.897).mirror()
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(180-143.5))
+
                 .build();
     }
 }

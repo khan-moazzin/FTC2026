@@ -113,24 +113,20 @@ public class A6Mirror extends OpMode {
             case 2:
                 mRobot.intake.intake();
                 follow(paths.Path2);
-                advanceAfterPath();
+                advanceAfterPathWithMin(3.5);
                 break;
 
             case 3:
                 follow(paths.Path3);
-                if(follower.isBusy())
-                    break;
-                advance();
+                advanceAfterPathWithMin(3.5);
                 break;
 
             case 4:
-//                follow(paths.Path4);
-//                advanceAfterPath();
-                break;
-            case 5:
-                mRobot.intake.stop();
                 mRobot.catapult.fire();
                 advanceAfter(FIRE_TIME);
+                break;
+            case 5:
+                follow(paths.leave,true);
                 break;
             case 6:
 

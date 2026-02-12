@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.Catapult;
 
-@Autonomous(name = "A6 BLUE", group = "Autonomous")
+@Autonomous(name = "A6 RED", group = "Autonomous")
 @Configurable
 public class A6 extends OpMode {
 
@@ -47,7 +47,7 @@ public class A6 extends OpMode {
         follower = Constants.createFollower(hardwareMap, telemetry);
 
         // Set starting pose
-        Pose startPose = new Pose(21.513, 122.293, Math.toRadians(143.5));
+        Pose startPose = new Pose(21.513, 122.293, Math.toRadians(143.5)).mirror();
         follower.setStartingPose(startPose);
 
         paths = new A6Path(follower);
@@ -113,24 +113,20 @@ public class A6 extends OpMode {
             case 2:
                 mRobot.intake.intake();
                 follow(paths.Path2);
-                advanceAfterPath();
+                advanceAfterPathWithMin(3.5);
                 break;
 
             case 3:
                 follow(paths.Path3);
-                if(follower.isBusy())
-                    break;
-                advance();
+                advanceAfterPathWithMin(3.5);
                 break;
 
             case 4:
-//                follow(paths.Path4);
-//                advanceAfterPath();
-                break;
-            case 5:
-                mRobot.intake.stop();
                 mRobot.catapult.fire();
                 advanceAfter(FIRE_TIME);
+                break;
+            case 5:
+                follow(paths.leave,true);
                 break;
             case 6:
 

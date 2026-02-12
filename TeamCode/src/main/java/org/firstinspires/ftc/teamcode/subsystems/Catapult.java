@@ -16,7 +16,7 @@ public class Catapult {
         HOLDING
     }
 
-    public State state = State.FIRING;
+    public State state = State.RETURNING;
     public ElapsedTime timer = new ElapsedTime();
 
     public Catapult(HardwareMap hw) {

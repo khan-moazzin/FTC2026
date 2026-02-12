@@ -14,6 +14,7 @@ public class A6Path {
     public PathChain Path1;
     public PathChain Path2;
     public PathChain Path3;
+    public PathChain leave;
 
     public A6Path(Follower follower) {
         Path1 = follower
@@ -32,14 +33,24 @@ public class A6Path {
                 .setTangentHeadingInterpolation()
                 .build();
 
-        Path3 = follower.pathBuilder().addPath(
+        Path3  = follower.pathBuilder().addPath(
                         new BezierCurve(
                                 new Pose(5.544, 83.870),
-                                new Pose(22.022, 102.151),
-                                new Pose(21.513, 122.293)
+                                new Pose(38.630, 100.978),
+                                new Pose(21.318, 125.810)
                         )
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(143.5))
+                ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(143.5))
+
+                .build();
+
+        leave = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(18.778, 124.247),
+
+                                new Pose(36.342, 139.897)
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(143.5))
+
                 .build();
     }
 }
